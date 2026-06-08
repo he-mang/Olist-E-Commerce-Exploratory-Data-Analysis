@@ -171,10 +171,90 @@ COALESCE(t.product_category_name_english, p.product_category_name) AS category
 
 ---
 
+## 🧹 Phase 3 — Data Cleaning & Preparation
+
+The goal of this phase was to produce clean, analysis-ready views that Phase 4 queries can build on without repeating the same filtering and joining logic every time.
+
+### Findings
+
+**Price outliers**
+
+3 order items were found with a price below R$1.00 (0.003% of all items). These are negligible and considered legitimate low-value transactions — no rows removed.
+
+**Duplicate order IDs**
+
+No duplicate `order_id` values found in the `orders` table. Revenue and delivery aggregations are safe from double-counting.
+
+**Duplicate review IDs — data quality issue identified**
+
+764 `review_id` values appeared twice and 25 appeared three times in `order_reviews`. Investigation revealed that the same `review_id` was linked to multiple different `order_id`s, indicating a data quality issue in Olist's source system rather than an import error.
+
+| Metric | Count |
+|---|---|
+| Total rows in `order_reviews` | 99,224 |
+| Duplicate rows removed | 814 |
+| Rows in deduplicated view | 98,410 |
+
+All review analysis in Phase 4 uses `vw_reviews_deduped` to avoid inflated scores.
+
+### Views created
+
+Three views were created as the clean foundation for Phase 4 analysis:
+
+**`vw_delivered_orders`**
+Filters `orders` to only fully delivered orders with no null timestamps. Used as the base for all delivery performance and revenue analysis.
+
+```sql
+CREATE VIEW vw_delivered_orders AS
+SELECT *
+FROM orders
+WHERE order_status = 'delivered'
+AND order_delivered_customer_date IS NOT NULL
+AND order_approved_at IS NOT NULL;
+```
+
+**`vw_products_translated`**
+Joins `products` to the category translation table with `COALESCE` fallback for the 623 products without an English translation.
+
+```sql
+CREATE VIEW vw_products_translated AS
+SELECT
+    p.product_id,
+    p.product_category_name,
+    COALESCE(t.product_category_name_english, p.product_category_name) AS category_english,
+    p.product_weight_g,
+    p.product_length_cm,
+    p.product_height_cm,
+    p.product_width_cm
+FROM products p
+LEFT JOIN product_category_name_translation t
+    ON p.product_category_name = t.product_category_name;
+```
+
+**`vw_reviews_deduped`**
+Deduplicates `order_reviews` by keeping one row per `review_id` (most recent where dates differ) using `ROW_NUMBER()`.
+
+```sql
+CREATE VIEW vw_reviews_deduped AS
+SELECT *
+FROM (
+    SELECT *,
+        ROW_NUMBER() OVER (
+            PARTITION BY review_id
+            ORDER BY review_creation_date DESC
+        ) AS rn
+    FROM order_reviews
+) AS ranked
+WHERE rn = 1;
+```
+
+---
+
 ## 🔜 Next Steps
 
 - [x] Phase 2 — Schema exploration & relationship validation
-- [ ] Phase 3 — Data cleaning & preparation
+- [x] Phase 3 — Data cleaning & preparation
 - [ ] Phase 4 — Core analysis (revenue, customers, delivery, sellers)
 - [ ] Phase 5 — Advanced SQL (window functions, CTEs, cohort analysis)
 - [ ] Phase 6 — Key findings write-up
+---
