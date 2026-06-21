@@ -38,6 +38,98 @@ The Olist dataset contains anonymised transactional data from a Brazilian e-comm
 
 ---
 
+## 🔑 Key Findings
+
+This section summarises the most important insights from the analysis in plain language. All findings are drawn from 16 SQL queries across Phases 4 and 5.
+
+---
+
+### Finding 1 — Olist grew rapidly through 2017 but plateaued in 2018
+
+Revenue grew nearly 10x across 2017, from R$127k in January to R$1.15M in November — driven largely by organic growth and a significant Black Friday spike. From January 2018 onwards, monthly revenue stabilised between R$966k and R$1.13M with minimal month-over-month movement. Total cumulative revenue from January 2017 to August 2018 reached **R$15.4M**. The business successfully scaled but has not broken through to a new growth phase within the dataset period.
+
+---
+
+### Finding 2 — Revenue and customers are heavily concentrated in Brazil's southeast
+
+São Paulo alone accounts for **41% of all customers** and **R$5.77M in revenue** — more than 2.8x the next state. The top 3 states (SP, RJ, MG) account for 64% of the entire customer base. While this reflects Brazil's economic geography, it also represents a significant concentration risk and a large untapped opportunity in other regions.
+
+---
+
+### Finding 3 — Health & beauty leads revenue; watches & gifts leads average spend
+
+The top 10 product categories account for a disproportionate share of total platform revenue. Health & beauty leads with R$1.41M across 8,647 orders. Watches & gifts generates R$1.26M from just 5,493 orders at an average item price of R$215.81 — the highest in the top 10 — indicating a high-value, lower-volume customer segment worth targeting for premium strategies.
+
+---
+
+### Finding 4 — Customer retention is critically low across the entire platform
+
+**97% of customers placed only one order and never returned.** This finding holds across every customer cohort tracked from January 2017 to August 2018 — larger cohorts do not retain better, and there is no reactivation pattern at any point across 12 months of follow-up. The business is almost entirely dependent on acquiring new customers to sustain revenue. Investing in post-purchase retention — loyalty programmes, personalised email campaigns, or repeat purchase incentives — could significantly improve revenue without increasing acquisition costs.
+
+---
+
+### Finding 5 — Deliveries to Brazil's north and northeast are significantly slower and later
+
+The national average delivery time is 12 days (median 10), but states in the north and northeast experience dramatically worse performance. Roraima averages 29 days, Amapá 27 days, and Amazonas 26 days — more than double the national average. Alagoas has the worst late delivery rate at 23%, with MA, CE, SE, and PI all exceeding 15%. Geography and distance from São Paulo distribution hubs is the primary driver.
+
+---
+
+### Finding 6 — Late deliveries directly tank customer satisfaction
+
+On-time orders average a review score of **4.30 out of 5**. Late orders average **2.62 out of 5** — a drop of 1.68 points. This is the strongest causal link in the dataset: operational delivery failures translate directly and measurably into customer dissatisfaction. Improving logistics reliability in the northeast region would likely produce an immediate improvement in platform-wide review scores.
+
+---
+
+### Finding 7 — A small number of high-risk sellers are responsible for disproportionate late deliveries
+
+Two sellers have a 35% late delivery rate — more than 1 in 3 of their orders arrives late. Seller `06a2c3af` is the biggest operational risk in absolute terms: 389 orders with a 24% late rate, meaning 95 individual customers received late deliveries from this seller alone. A seller performance monitoring system with automatic flagging above a late delivery threshold would help Olist protect customer satisfaction at scale.
+
+---
+
+### Summary — Three actionable recommendations
+
+| Priority | Recommendation | Supporting Finding |
+|---|---|---|
+| 🔴 High | Invest in post-purchase retention strategy (loyalty, email, discounts) | 97% one-time buyer rate, structural cohort retention collapse |
+| 🔴 High | Improve logistics infrastructure in north and northeast Brazil | 23% late rate in AL, 29-day avg delivery in RR, 1.68pt review score drop for late orders |
+| 🟡 Medium | Implement seller performance monitoring with late delivery thresholds | Two sellers at 35% late rate, seller `06a2c3af` with 95 late deliveries |
+
+---
+
+## 🛠️ SQL Techniques Used
+
+| Technique | Used In |
+|---|---|
+| `LEFT JOIN` for integrity checks | Phase 2 |
+| `BULK INSERT` with custom terminators | Phase 1 |
+| Null handling with `COALESCE` | Phase 3 |
+| `ROW_NUMBER()` for deduplication | Phase 3 |
+| Multi-table `INNER JOIN` | Phase 4 |
+| `GROUP BY` with `HAVING` | Phase 4 |
+| `CASE WHEN` for segmentation | Phase 4 |
+| CTEs for layered logic | Phase 4 & 5 |
+| `DATEDIFF` for date calculations | Phase 4 & 5 |
+| `PERCENTILE_CONT` for median | Phase 4 |
+| `LAG()` for month-over-month growth | Phase 5 |
+| `SUM() OVER()` for running totals | Phase 5 |
+| Multi-CTE cohort retention analysis | Phase 5 |
+
+---
+
+## 📁 Project Structure
+
+```
+olist-eda/
+│
+├── raw_data/                  # Original CSV files (not tracked in git)
+├── scripts/
+│   ├── 01_create_tables.sql   # Table definitions
+│   ├── 02_bulk_insert.sql     # Data import scripts
+│   └── 03_validation.sql      # Row count and integrity checks
+└── README.md
+```
+---
+
 ## 🗂️ Schema Diagram
 
 ```
