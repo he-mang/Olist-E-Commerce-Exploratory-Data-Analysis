@@ -1,22 +1,7 @@
 # Olist-E-Commerce-Exploratory-Data-Analysis
 **Tool:** Microsoft SQL Server 2025  
 **Dataset:** [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (Kaggle)  
-**Status:** 🔄 In progress
-
----
-
-## 📁 Project Structure
-
-```
-olist-eda/
-│
-├── raw_data/                  # Original CSV files (not tracked in git)
-├── scripts/
-│   ├── 01_create_tables.sql   # Table definitions
-│   ├── 02_bulk_insert.sql     # Data import scripts
-│   └── 03_validation.sql      # Row count and integrity checks
-└── README.md
-```
+**Status:** ✅ Complete
 
 ---
 
