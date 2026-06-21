@@ -484,12 +484,92 @@ Key observations:
 
 ---
 
-## 🔜 Next Steps
+## 🔬 Phase 5 — Advanced SQL Techniques
 
-- [x] Phase 2 — Schema exploration & relationship validation
-- [x] Phase 3 — Data cleaning & preparation
-- [x] Phase 4 — Core analysis (revenue, customers, delivery, sellers)
-- [ ] Phase 5 — Advanced SQL (window functions, CTEs, cohort analysis)
-- [ ] Phase 6 — Key findings write-up
+This phase builds on Phase 4 findings using window functions, multi-step CTEs, and cohort analysis to produce deeper insights and demonstrate production-level SQL.
+
+---
+
+**Query 14 — Month-over-month revenue growth rate**
+
+Uses `LAG()` to calculate the percentage change in revenue between each consecutive month.
+
+> ⚠️ Note: `DECIMAL(5,2)` caused an arithmetic overflow due to the extreme January 2017 growth rate (649,071% — a result of comparing against December 2016's single R$19.62 order). Changed to `DECIMAL(10,2)`. The January 2017 figure is excluded from interpretation as it is statistically meaningless.
+
+| Month | Total Revenue | Prev Month Revenue | MoM Growth % |
+|---|---|---|---|
+| 2017-02 | R$269,400 | R$127,367 | +111.51% |
+| 2017-03 | R$414,331 | R$269,400 | +53.80% |
+| 2017-04 | R$390,812 | R$414,331 | -5.68% |
+| 2017-05 | R$566,657 | R$390,812 | +44.99% |
+| 2017-06 | R$490,050 | R$566,657 | -13.52% |
+| 2017-07 | R$566,299 | R$490,050 | +15.56% |
+| 2017-08 | R$645,832 | R$566,299 | +14.04% |
+| 2017-09 | R$701,077 | R$645,832 | +8.55% |
+| 2017-10 | R$751,117 | R$701,077 | +7.14% |
+| 2017-11 | R$1,153,229 | R$751,117 | +53.54% |
+| 2017-12 | R$843,078 | R$1,153,229 | -26.89% |
+| 2018-01 | R$1,077,887 | R$843,078 | +27.85% |
+| 2018-02 | R$966,168 | R$1,077,887 | -10.36% |
+| 2018-03 | R$1,120,598 | R$966,168 | +15.98% |
+| 2018-04 | R$1,132,879 | R$1,120,598 | +1.10% |
+| 2018-05 | R$1,128,775 | R$1,132,879 | -0.36% |
+| 2018-06 | R$1,011,449 | R$1,128,775 | -10.39% |
+| 2018-07 | R$1,027,287 | R$1,011,449 | +1.57% |
+| 2018-08 | R$985,492 | R$1,027,287 | -4.07% |
+
+Key observations:
+- **Early 2017 shows explosive growth** — February grew 111.51% over January, March grew 53.80%
+- **November 2017 spiked 53.54%** — driven by Black Friday, the single biggest month in the dataset
+- **December 2017 dropped 26.89%** — a typical post-Black Friday correction
+- **2018 growth largely flattened** — monthly swings between -10% and +16%, confirming the business matured into a stable plateau
+
+---
+
+**Query 15 — Cumulative revenue over time**
+
+Uses `SUM() OVER()` with `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` to calculate a running total of revenue across the dataset period.
+
+| Month | Monthly Revenue | Cumulative Revenue |
+|---|---|---|
+| 2017-01 | R$127,367 | R$127,367 |
+| 2017-04 | R$390,812 | R$1,201,910 |
+| 2017-10 | R$751,117 | R$4,922,944 |
+| 2017-11 | R$1,153,229 | R$6,076,174 |
+| 2018-03 | R$1,120,598 | R$10,083,906 |
+| 2018-08 | R$985,492 | R$15,369,786 |
+
+Key observations:
+- **Crossed R$1M cumulative revenue by April 2017** — just 4 months into the first full year
+- **Crossed R$5M by October 2017** and **R$6M after the November Black Friday spike** — a single month added over R$1.1M
+- **Crossed R$10M in March 2018** — doubling from R$5M in just 5 months
+- **Total cumulative revenue reached R$15,369,786** across 20 months of complete data (Jan 2017 – Aug 2018)
+
+---
+
+**Query 16 — Customer cohort retention analysis**
+
+Groups customers by their first order month (cohort) and tracks how many return to purchase again in each subsequent month. Uses a 4-CTE chain: `first_orders` → `customer_orders` → `cohort_sizes` → `cohort_retention`.
+
+**How to read the results:** Each row represents one cohort tracked at a specific point in time. `months_since_first_order = 0` is always 100% (the initial purchase). Subsequent months show what percentage of that original cohort came back.
+
+**Sample — January 2017 cohort (715 customers):**
+
+| Months Since First Order | Active Customers | Retention % |
+|---|---|---|
+| 0 (Jan 2017) | 715 | 100% |
+| 1 (Feb 2017) | 2 | 0.28% |
+| 2 (Mar 2017) | 2 | 0.28% |
+| 6 (Jul 2017) | 3 | 0.42% |
+| 12 (Jan 2018) | 5 | 0.70% |
+
+Key observations:
+- **Retention collapses immediately and universally** — every cohort drops from 100% to under 1% after just one month, without exception
+- **Scale does not improve loyalty** — the November 2017 Black Friday cohort (7,059 customers, the largest in the dataset) retained only 40 customers in month 1 (0.57%)
+- **No reactivation bump at any point** — customers who don't return in month 1 don't return at months 3, 6, or 12 either. Retention stays consistently below 1% throughout all 12 tracked months
+- **This directly proves the retention problem is structural**, not a timing issue — customers are not "slow to return", they simply do not return at all
+- **Later cohorts have truncated data** — August 2018 only has month 0, July 2018 only months 0–1, etc. This is expected as these customers haven't had enough time in the dataset to return
+
+> **Business implication:** A post-purchase retention strategy — loyalty programmes, personalised email campaigns, or repeat purchase discounts — could have an outsized impact on revenue without requiring any increase in new customer acquisition spend.
 
 ---
