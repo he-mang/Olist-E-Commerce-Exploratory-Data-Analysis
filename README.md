@@ -104,13 +104,19 @@ Two sellers have a 35% late delivery rate — more than 1 in 3 of their orders a
 ## 📁 Project Structure
 
 ```
-olist-eda/
+Olist-E-Commerce-Exploratory-Data-Analysis/
 │
-├── raw_data/                  # Original CSV files (not tracked in git)
-├── scripts/
-│   ├── 01_create_tables.sql   # Table definitions
-│   ├── 02_bulk_insert.sql     # Data import scripts
-│   └── 03_validation.sql      # Row count and integrity checks
+├── Raw_Data/                  # Original CSV files
+├── Scripts/
+│   ├── 01_Phase_1_Create_Database_and_Tables.sql         # Table definitions
+│   ├── 02_Phase_1_Bulk_Insert.sql                        # Data import scripts
+│   └── 03_Phase_2_Schema Exploration_and_Validation.sql  # Row count and integrity checks
+│   └── 04_Phase_3_Data_Cleaning_and_Exploration          # Handle nulls, remove duplicates, etc.
+│   └── 05_Phase_4_Theme_1_Sales_&_Revenue                # Monthly revenue trend, top product categories, etc.
+│   └── 06_Phase_4_Theme_2_Customer_Behaviour             # Repeat vs one time buyers, order frequency, etc.
+│   └── 07_Phase_4_Theme_3_Delivery_Performance           # Avg delivery time by state, on time vs late delivery rate, etc. 
+│   └── 08_Phase_4_Theme_4_Seller_Performance             # Top sellers by revenue, sellers with most late deliveries, etc.
+│   └── 09_Phase_5_Advanced_SQL_Techniques                # Window functions, Cohort Analysis, etc.
 └── README.md
 ```
 ---
